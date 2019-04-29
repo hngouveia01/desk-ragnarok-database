@@ -40,7 +40,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     QSqlQuery query;
-    query.exec("SELECT id, name_japanese, item_image FROM item_db WHERE name_japanese LIKE '%" + ui->lineEditSearch->text() + "%'");
+    query.exec("select item_db.id, item_db.name_japanese, item_db.item_image FROM item_db WHERE item_db.name_japanese LIKE '%" + ui->lineEditSearch->text() + "%' UNION SELECT mob_db.id, mob_db.iName, mob_db.image_mob FROM mob_db WHERE mob_db.iName LIKE '%" + ui->lineEditSearch->text() + "%'");
 
     ui->listWidget->clear();
 
