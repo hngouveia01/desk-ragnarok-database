@@ -10,6 +10,8 @@
 #include <QPixmap>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QSqlQueryModel>
+#include <QTableWidget>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -25,7 +27,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if (!db.open()) {
         QMessageBox::information(parent, "Error", "Error while opening database");
+        exit(EXIT_FAILURE);
     }
+
+    ui->lineEditSearch->setFocus();
+
+    ui->tableWidget->setColumnCount(2);
+
+    ui->tableWidget->setHorizontalHeaderLabels(QStringList() << "ID" << "Name");
 }
 
 MainWindow::~MainWindow()
@@ -39,20 +48,34 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    QSqlQuery query;
-    query.exec("select item_db.id, item_db.name_japanese, item_db.item_image FROM item_db WHERE item_db.name_japanese LIKE '%" + ui->lineEditSearch->text() + "%' UNION SELECT mob_db.id, mob_db.iName, mob_db.image_mob FROM mob_db WHERE mob_db.iName LIKE '%" + ui->lineEditSearch->text() + "%'");
+    QSqlQuery query("select item_db.item_image, item_db.id, item_db.name_japanese FROM item_db WHERE item_db.name_japanese LIKE '%" + ui->lineEditSearch->text() + "%' UNION SELECT mob_db.image_mob, mob_db.id, mob_db.iName FROM mob_db WHERE mob_db.iName LIKE '%" + ui->lineEditSearch->text() + "%'");
+    query.exec();
 
-    ui->listWidget->clear();
+    int currentRow = 0;
 
     while (query.next()) {
-        QString name = query.value(0).toString() + " " + query.value(1).toString();
-        QByteArray outByteArray = query.value(2).toByteArray();
+        ui->tableWidget->insertRow(currentRow);
+
+        QString id = query.value(1).toString();
+        QString name = query.value(2).toString();
+
+        QByteArray outByteArray = query.value(0).toByteArray();
         QPixmap outPixmap = QPixmap();
         outPixmap.loadFromData(outByteArray);
         QIcon icon = QIcon(outPixmap);
-        QListWidgetItem *item = new QListWidgetItem(icon, name);
-        ui->listWidget->addItem(item);
+
+        QTableWidgetItem *itemIcon = new QTableWidgetItem();
+        itemIcon->setIcon(icon);
+        ui->tableWidget->setVerticalHeaderItem(currentRow, itemIcon);
+
+        auto *itemId = new QTableWidgetItem(id);
+        ui->tableWidget->setItem(currentRow, 0, itemId);
+
+        auto *itemName = new QTableWidgetItem(name);
+        ui->tableWidget->setItem(currentRow, 1, itemName);
+        currentRow++;
     }
+    ui->tableWidget->resizeRowsToContents();
 }
 
 void MainWindow::on_lineEditSearch_returnPressed()
