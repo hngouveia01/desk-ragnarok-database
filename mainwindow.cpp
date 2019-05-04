@@ -48,6 +48,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
+    ui->tableWidget->setRowCount(0);
     QSqlQuery query("select item_db.item_image, item_db.id, item_db.name_japanese FROM item_db WHERE item_db.name_japanese LIKE '%" + ui->lineEditSearch->text() + "%' UNION SELECT mob_db.image_mob, mob_db.id, mob_db.iName FROM mob_db WHERE mob_db.iName LIKE '%" + ui->lineEditSearch->text() + "%'");
     query.exec();
 
