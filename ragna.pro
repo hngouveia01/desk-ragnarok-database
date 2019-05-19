@@ -26,8 +26,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        database.cpp \
+        dbexception.cpp \
+        element.cpp \
+        mainwindow.cpp \
+        monsterdao.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    dao.h \
+    database.h \
+    dbexception.h \
+    element.h \
+    monsterdao.h
 
 FORMS    += mainwindow.ui

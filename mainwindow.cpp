@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "database.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -18,19 +19,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("192.168.1.69");
-    db.setDatabaseName("rathena_rag");
-    db.setUserName("root");
-    db.setPassword("mirolhadb");
 
+    m_db = Database();
 
-    if (!db.open()) {
-        QMessageBox::information(parent, "Error", "Error while opening database");
+    try {
+        m_db.initialize();
+    } catch (DbException& e) {
+        QMessageBox::information(parent, "Error", e.getMessage());
         exit(EXIT_FAILURE);
     }
 
-    ui->lineEditSearch->setFocus();
+    ui->lineEditSearchMonster->setFocus();
 
     ui->tableWidget->setColumnCount(2);
 
@@ -39,22 +38,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    if (db.isOpen()) {
-        db.close();
-    }
-
     delete ui;
 }
 
-void MainWindow::on_pushButton_clicked()
-{
+void MainWindow::on_lineEditSearchMonster_returnPressed() {
     ui->tableWidget->setRowCount(0);
-    QSqlQuery query("select item_db.item_image, item_db.id, item_db.name_japanese FROM item_db WHERE item_db.name_japanese LIKE '%" + ui->lineEditSearch->text() + "%' UNION SELECT mob_db.image_mob, mob_db.id, mob_db.iName FROM mob_db WHERE mob_db.iName LIKE '%" + ui->lineEditSearch->text() + "%'");
-    query.exec();
 
     int currentRow = 0;
 
-    while (query.next()) {
+    while (1) {
         ui->tableWidget->insertRow(currentRow);
 
         QString id = query.value(1).toString();
@@ -77,9 +69,4 @@ void MainWindow::on_pushButton_clicked()
         currentRow++;
     }
     ui->tableWidget->resizeRowsToContents();
-}
-
-void MainWindow::on_lineEditSearch_returnPressed()
-{
-    on_pushButton_clicked();
 }
